@@ -1,0 +1,8 @@
+- [ ] Preserve assignments and existing saved subjects; add assignment tracker and priorities
+- [ ] Study sessions: add, edit, delete; shared totals and date calculations
+- [ ] Dashboard study overview, today's tasks, goals and deadlines
+- [ ] Subject editing, targets and study progress
+- [ ] Study calendar, streaks and daily/weekly goals
+- [ ] Exams with dates and revision-topic status
+- [ ] Weekly report and previous-week comparison
+- [ ] Verify saved-data flows, calculations and page layouts
