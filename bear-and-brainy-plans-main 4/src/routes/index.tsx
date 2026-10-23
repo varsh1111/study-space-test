@@ -28,6 +28,7 @@ function Dashboard() {
   const pending = assignments.filter((a) => !a.done).sort((a, b) => a.due.localeCompare(b.due));
   const soon = pending.filter((a) => daysUntil(a.due) <= 2);
   const unlocked = getAchievements(planner).filter((a) => a.unlocked).length;
+  const week = weekSummary(sessions);
 
   const stats = [
     { icon: BookOpen, label: "Subjects", value: subjects.length },
@@ -72,7 +73,7 @@ function Dashboard() {
             {exams.filter(e => e.date >= dateKey()).sort((a,b) => a.date.localeCompare(b.date)).slice(0,2).map(e => {
               const subject = subjects.find(s => s.id === e.subjectId);
               const days = Math.round((new Date(`${e.date}T00:00:00`).getTime() - new Date(`${dateKey()}T00:00:00`).getTime()) / 86400000);
-              return <div key={e.id} className="flex items-center justify-between gap-3 rounded-lg bg-muted/60 p-3"><div><p className="font-medium">{e.title}</p><p className="text-xs text-muted-foreground">{subject?.emoji} {subject?.name}</p></div><span className="text-sm font-semibold">{days === 0 ? 'Today' : `${days} days left`}</span></div>;
+              return <div key={e.id} className="flex items-center justify-between gap-3 rounded-lg bg-muted/60 p-3"><div><p className="font-medium">{e.title}</p><p className="text-xs text-muted-foreground">{subject ? subject.name : 'General'} • {days === 0 ? 'Today' : `${days} day${days === 1 ? '' : 's'} away`}</p></div><span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">{e.date}</span></div>;
             })}
             {!exams.some(e => e.date >= dateKey()) && <p className="text-sm text-muted-foreground">No exams added yet. Add an exam to make a revision plan.</p>}
             <Link to="/exams" className="inline-flex text-sm font-semibold text-primary hover:underline">Open exam tracker →</Link>
@@ -108,6 +109,11 @@ function Dashboard() {
             {subjects.map((s) => {
               const list = assignments.filter((a) => a.subjectId === s.id);
               const p = progressOf(list);
+              const subjectHours = hours(sessions.filter((session) => session.subjectId === s.id));
+              const subjectWeekHours = hours(week.current.filter((session) => session.subjectId === s.id));
+              const targetShare = subjects.length > 0 ? Math.max(goals.weeklyHours / subjects.length, 1) : goals.weeklyHours;
+              const weeklyShare = goals.weeklyHours > 0 ? Math.min(100, (subjectWeekHours / targetShare) * 100) : 0;
+
               return (
                 <Link key={s.id} to="/subjects/$id" params={{ id: s.id }} className="block rounded-xl border bg-card p-4 transition hover:shadow-soft">
                   <div className="mb-2 flex items-center gap-2">
@@ -115,8 +121,19 @@ function Dashboard() {
                     <span className="font-semibold">{s.name}</span>
                     <span className="ml-auto text-sm text-muted-foreground">{list.filter((a) => a.done).length}/{list.length}</span>
                   </div>
+                  <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{hoursLabel(subjectWeekHours)} this week</span>
+                    <span>{hoursLabel(subjectHours)} total</span>
+                  </div>
                   <div className="h-2 overflow-hidden rounded-full bg-muted">
                     <div className="h-full rounded-full transition-all" style={{ width: `${p}%`, background: subjectColor(s.color) }} />
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted/70">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${weeklyShare}%`, background: subjectColor(s.color) }} />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>Weekly progress</span>
+                    <span>{Math.round(weeklyShare)}%</span>
                   </div>
                 </Link>
               );
