@@ -8,7 +8,7 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -76,6 +76,31 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   );
 }
 
+function CurrentDateBadge() {
+  const [currentDate, setCurrentDate] = useState(() => new Date());
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setCurrentDate(new Date());
+    }, 60000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(currentDate);
+
+  return (
+    <span className="ml-auto rounded-full border border-border/70 bg-muted/70 px-3 py-1 text-xs font-semibold tracking-wide text-muted-foreground">
+      {formattedDate}
+    </span>
+  );
+}
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -131,6 +156,7 @@ function RootComponent() {
               <header className="flex h-14 items-center gap-2 border-b px-4">
                 <SidebarTrigger />
                 <span className="text-sm text-muted-foreground">Study Planner</span>
+                <CurrentDateBadge />
               </header>
               <main className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">
                 <Outlet />
